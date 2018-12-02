@@ -4,10 +4,12 @@ This is a framework that combines categorical matrix completion and active machi
 
 ### Prerequisites
 
-What things you need to install the software and how to install them
-
+Here are some prerequisites to run the soft ware
 ```
-Give examples
+Python 3.6
+Numpy
+Scipy
+Pandas
 ```
 
 ### Installing
