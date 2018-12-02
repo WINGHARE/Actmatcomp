@@ -42,14 +42,6 @@ op.add_option(
     dest='date',
     help='indicate the time of the job')
 op.add_option(
-    '-m',
-    '--metric',
-    default='node_1nn',
-    action='store',
-    type='string',
-    dest='metric',
-    help='metric of clustering, if not clutsering is used it is dummy')
-op.add_option(
     '-l',
     '--linkage',
     default='predictround',
@@ -114,14 +106,6 @@ op.add_option(
     dest='phenotypes',
     help='Number of max phenotypes')
 op.add_option(
-    '-u',
-    '--duplicate',
-    default=0,
-    action='store',
-    type='int',
-    dest='duplicate',
-    help='Duplicate of the experiment space, 1: duplicate, 0: reserve 3200')
-op.add_option(
     '-s',
     '--select',
     default='margin',
@@ -148,9 +132,8 @@ if len(args) > 0:
 NUM_TAR = opts.condition
 NUM_CON = opts.target
 BATCHSIZE = opts.batchsize
-DUPLICATE = opts.duplicate
+DUPLICATE = False
 ROUNDS = opts.rounds
-METRIC = opts.metric
 IMPUTE = opts.impute
 LINKAGE = opts.linkage
 OPATH = opts.outputpath

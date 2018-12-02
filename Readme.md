@@ -37,6 +37,11 @@ indices.npy
 
 You may run the codes on Python commond line.
 
+```
+python activelearner.py 
+```
+Options are displayed in the code.
+
 ## Authors
 
 * **Junyi Chen** 
