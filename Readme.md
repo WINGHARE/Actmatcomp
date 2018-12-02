@@ -15,9 +15,9 @@ Fancyimpute
 
 ## Built With
 
-* [Fancyimpute](https://github.com/iskandr/fancyimpute) - Some base implmentation of the matrix completion related tasks. We integrate some codes in our projects and do some modifications
+* [Fancyimpute](https://github.com/iskandr/fancyimpute) - Some base implmentation of the matrix completion related tasks. We integrate some codes in our projects and do some modifications.
 
-### Installing
+## Installing
 
 You may download the codes to the directory you want.
 
