@@ -4,40 +4,26 @@ This is a framework that combines categorical matrix completion and active machi
 
 ### Prerequisites
 
-Here are some prerequisites to run the soft ware
+Here are some prerequisites to run the software
 ```
-Python 3.6
+Python3.6
 Numpy
 Scipy
 Pandas
+Fancyimpute
 ```
+
+## Built With
+
+* [Fancyimpute](https://github.com/iskandr/fancyimpute) - Some base implmentation of the matrix completion related tasks. We integrate some codes in our projects and do some modifications
 
 ### Installing
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
+You may download the codes to the directory you want.
 
 ## Running the tests
 
-Explain how to run the automated tests for this system
-
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+You may run the codes on Python commond line .
 
 ## Authors
 
@@ -45,10 +31,18 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-## Acknowledgments
+     http://www.apache.org/licenses/LICENSE-2.0
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+## Group homepage
+
+* [Group homepage](http://bioinfo.cs.cityu.edu.hk/)
