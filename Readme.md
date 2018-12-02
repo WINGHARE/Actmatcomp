@@ -1,7 +1,4 @@
-# Project Title
-
-Active matcomp
-## About 
+# Active matcomp
 
 This is a framework that combines categorical matrix completion and active machine learningto guide the high throughput screening experiment.
 

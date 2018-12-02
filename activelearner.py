@@ -1,9 +1,4 @@
 
-# coding: utf-8
-
-# In[ ]:
-
-
 import os
 import string
 import sys
@@ -38,14 +33,14 @@ op.add_option(
     action='store',
     type='string',
     dest='cluster',
-    help='indicate the clusterid')
+    help='indicate the ID of the job')
 op.add_option(
     '-d',
     '--date',
     action='store',
     type='string',
     dest='date',
-    help='indicate the date')
+    help='indicate the time of the job')
 op.add_option(
     '-m',
     '--metric',
@@ -53,15 +48,15 @@ op.add_option(
     action='store',
     type='string',
     dest='metric',
-    help='metric of clustering metric')
+    help='metric of clustering, if not clutsering is used it is dummy')
 op.add_option(
     '-l',
     '--linkage',
-    default='my_merge',
+    default='predictround',
     action='store',
     type='string',
     dest='linkage',
-    help='linkage of clustering, default use my mergeing and regardless of linkage. Else, hierachical clustering is preformed')
+    help='linkage of clustering, since no clustering is using, we use predictions')
 op.add_option(
     '-b',
     '--batchsize',
@@ -69,7 +64,7 @@ op.add_option(
     action='store',
     type='int',
     dest='batchsize',
-    help='batchsize of clustering metric')
+    help='batchsize of clustering metric, if -1, the number is pre-determinined')
 op.add_option(
     '-o',
     '--outputpath',
@@ -77,15 +72,15 @@ op.add_option(
     action='store',
     type='string',
     dest='outputpath',
-    help='batchsize of clustering metric')
+    help='Output path, please specify one before running')
 op.add_option(
     '-p',
     '--impute',
-    default='three_point',
+    default='svt',
     action='store',
     type='string',
     dest='impute',
-    help='impute method')
+    help='Impute method, the matrix completioin method')
 op.add_option(
     '-n',
     '--condition',
@@ -93,7 +88,7 @@ op.add_option(
     action='store',
     type='int',
     dest='condition',
-    help='condition size of the problem,')
+    help='Condition size of the problem,')
 op.add_option(
     '-t',
     '--target',
@@ -101,7 +96,7 @@ op.add_option(
     action='store',
     type='int',
     dest='target',
-    help='target size of the problem,')
+    help='Target size of the problem,')
 op.add_option(
     '-r',
     '--rounds',
@@ -109,7 +104,7 @@ op.add_option(
     action='store',
     type='int',
     dest='rounds',
-    help='Iteration of the learning procedure')
+    help='Iterations of the learning procedure')
 op.add_option(
     '-y',
     '--phenotypes',
@@ -133,7 +128,7 @@ op.add_option(
     action='store',
     type='string',
     dest='select',
-    help='Selection method of active learning')
+    help='Selection querying method of active learning')
 op.add_option(
     '-f',
     '--info',
@@ -205,18 +200,6 @@ for c in range(1, NUM_CON + 1):
     for t in range(1, NUM_TAR + 1):
         full_set.add((c, t))
 
-# New added in 0822
-if(LINKAGE == 'lastround'):
-    el30_df = pandas.read_csv('data/bear_round30' +
-                              '.apredictions', sep=' ', header=None)
-    el30_df = el30_df.add([0, 0, 1, 1, 0, 0], axis=1)
-    el30_df.columns = ['condition', 'target',
-                       'phenotype1', 'phenotype2', 'observed', 'frontier']
-    ob30_exps = el30_df.loc[el30_df.observed == 1]
-    ava_exps = utils.get_exp_from_df(ob30_exps)
-    logging.info(
-        "avaliable experiments changed due to the last round option: {0}".format(len(ava_exps)))
-# New added in 0822
 
 ava_exps = utils.get_exp_from_df(zdata_df)
 na_exps = full_set - ava_exps
@@ -241,123 +224,15 @@ nmzsc_df = nmzsc_df[(nmzsc_df.target <= NUM_TAR) &
 #############################################################################################################
 
 
-# Active selection methods
+# Initial round to select the control group
 #############################################################################################################
-
-# Impure prediction selection with fake three point imputation
-# =========================================================================================================
-
-def get_related_experiments_impure(lb_expmean_df, condition, target):
-
-    c_related_data = lb_expmean_df.loc[(
-        lb_expmean_df.condition == condition) & (lb_expmean_df.target != target)]
-    t_related_data = lb_expmean_df.loc[(lb_expmean_df.target == target) & (
-        lb_expmean_df.condition != condition)]
-
-    same_pheno = c_related_data.merge(
-        t_related_data, left_on='phenotype', right_on='phenotype')
-
-    if(len(same_pheno) > 0):
-        phelist = same_pheno.phenotype.as_matrix().tolist()
-        return utils.entropy(phelist)
-
-    return -0.5
-
-
-def impure_matirx(data_df, exped_df, naexp_set, exped_set=set([])):
-
-    var_mat = np.ndarray(shape=(NUM_TAR, NUM_CON))
-
-    for c in range(0, NUM_CON):
-        for t in range(0, NUM_TAR):
-
-            # If the experiment is from the not wvaliable set, the var is -1.
-            if(((c + 1, t + 1) in naexp_set) and (DUPLICATE == False)):
-                var_mat[t, c] = -1
-            elif((c + 1, t + 1) in exped_set):
-                var_mat[t, c] = -2
-            else:
-                var_mat[t, c] = get_related_experiments_impure(
-                    data_df, c + 1, t + 1)
-
-    return var_mat
-
-
-def three_p_impute(condition, target, data_df):
-
-    c_related_data = data_df.loc[(
-        data_df.condition == condition) & (data_df.target != target)]
-    t_related_data = data_df.loc[(data_df.target == target) & (
-        data_df.condition != condition)]
-
-    same_pheno = c_related_data.merge(
-        t_related_data, left_on='phenotype', right_on='phenotype')
-
-    flag = False
-
-    if(len(same_pheno) > 0):
-        phelist = same_pheno.phenotype.as_matrix().tolist()
-        majorpheno = max(phelist, key=phelist.count)
-        #data_df.loc[(data_df.condition==condition) & (data_df.target==target), 'phenotype'] = majorpheno
-        new_row = pandas.DataFrame([[condition, target, majorpheno]], columns=[
-                                   'condition', 'target', 'phenotype'])
-        data_df = data_df.append(new_row)
-        flag = True
-
-    else:
-        tup = data_df[(data_df.target == target) & (
-            data_df.condition == 48)].as_matrix()
-        tup[0, 0] = condition
-        new_row = pandas.DataFrame(
-            tup, columns=['condition', 'target', 'phenotype'])
-        data_df = data_df.append(new_row)
-
-    return data_df, flag
-
-# Impure prediction selection with fake three point imputation end
-# =========================================================================================================
-# Non ngeative matrix factorization
-# =========================================================================================================
-# This part is remove to a seperate file
-
-# Non ngeative matrix factorization ends
-# =========================================================================================================
-
-# Active selection methods ends
-#############################################################################################################
-
-# Initial round
-#############################################################################################################
-
 
 # Get true experimnets form pool
 exped_df = nmzsc_df[(nmzsc_df.condition == 48)]
 exped_set = utils.get_exp_from_df(exped_df)
 
-# Query the labels
-if(LINKAGE in ['my_merge', 'complete', 'average', 'single']):
-    ini_km = elCluster.ELHierarchy()
-    ini_km.fit(data=exped_df.iloc[:, 2:].as_matrix(), index=exped_df.iloc[:, :2].as_matrix(),
-               metric=METRIC, link=LINKAGE)
-    ini_exped_labels = ini_km.predict(t=phenonum_list[0])
-    exped_lines = np.array(list(ini_km.node_to_line.values()))
-
-
-elif(LINKAGE == 'spectual'):
-    ini_km = elCluster.ELSpectual()
-    ini_km.fit(data=exped_df.iloc[:, 2:].as_matrix(), index=exped_df.iloc[:, :2].as_matrix(),
-               metric=METRIC)
-    ini_exped_labels = ini_km.predict(n_clusters=phenonum_list[0])
-    exped_lines = np.array(list(ini_km.node_to_line.values()))
-
-# New added in 0822
-elif(LINKAGE == 'lastround'):
-    con48_r30_phe = ob30_exps.loc[ob30_exps.condition == 48]
-    exped_lines = con48_r30_phe.iloc[:, :2].as_matrix()
-    ini_exped_labels = con48_r30_phe.phenotype1.as_matrix()
-
 # Add in 0906 predict round method that build precition using supervised model in each round
-elif(LINKAGE == 'predictround'):
+if(LINKAGE == 'predictround'):
     ap_df = pandas.read_csv("data/elap/bear_round" +
                             str(1) + ".apredictions", sep=" ", header=None)
     ap_df.columns = ['condition', 'target', 'phenotype1',
@@ -367,7 +242,6 @@ elif(LINKAGE == 'predictround'):
     con48_r1_phe = ap_ob1_df.loc[ap_ob1_df.condition == 48]
     exped_lines = con48_r1_phe.iloc[:, :2].as_matrix()
     ini_exped_labels = con48_r1_phe.phenotype1.as_matrix()
-# Add in 0906
 
 exp_pheno_df = pandas.DataFrame(
     exped_lines, columns=[['condition', 'target']])
@@ -430,32 +304,8 @@ def update_imputed_frame(data_df, exped_df, exped_set, impute_set, which_round, 
     logging.warning(
         "{0} expriment is not avaliable in this batch".format(missing_flag))
 
-    # Query for the pool
-    if(LINKAGE in ['my_merge', 'complete', 'average', 'single']):
-        clustering = elCluster.ELHierarchy()
-        clustering.fit(data=exped_df.iloc[:, 2:].as_matrix(), index=exped_df.iloc[:, :2].as_matrix(),
-                       metric=METRIC, link=LINKAGE)
-        labels = clustering.predict(t=phenonum_list[which_round])
-        exped_lines = np.array(list(clustering.node_to_line.values()))
-
-    elif(LINKAGE == 'spectual'):
-        clustering = elCluster.ELSpectual()
-        clustering.fit(data=exped_df.iloc[:, 2:].as_matrix(), index=exped_df.iloc[:, :2].as_matrix(),
-                       metric=METRIC)
-        labels = clustering.predict(n_clusters=phenonum_list[which_round])
-        exped_lines = np.array(list(clustering.node_to_line.values()))
-
-    # Add in 0822
-    elif(LINKAGE == 'lastround'):
-        query_ary = np.array(list(exped_set))
-        query_df = pandas.DataFrame(
-            query_ary, columns=[['condition', 'target']])
-        labels = query_df.merge(ob30_exps).phenotype1.as_matrix()
-        exped_lines = query_df.iloc[:, :2].as_matrix()
-    # Add in 0822
-
-    # Add in 0906
-    elif(LINKAGE == 'predictround'):
+    # To study the data from their files
+    if(LINKAGE == 'predictround'):
 
         # The experimenrs we want to perform
         query_ary = np.array(list(exped_set))
@@ -488,21 +338,8 @@ def update_imputed_frame(data_df, exped_df, exped_set, impute_set, which_round, 
     data_df['phenotype'] = labels
 
     var_mat = np.full((NUM_TAR, NUM_CON), -1)
-    # Predictive model
-    if(method == 'three_point'):
 
-        count_imp = 0
-
-        for item in full_set - exped_set:
-            c, t = item[0], item[1]
-            data_df, flag = three_p_impute(c, t, data_df)
-
-            count_imp += int(flag)
-
-        logging.info(
-            "{0} result is generate from the predictive model, rest are queried from the viechle only pool".format(count_imp))
-
-    elif(method == 'nmf' or method == 'svt'):
+    if(method == 'svt'):
 
         # Generate the phenotype matrix and phenotype list
         phenotype_list = np.array(data_df.drop_duplicates(
@@ -514,11 +351,6 @@ def update_imputed_frame(data_df, exped_df, exped_set, impute_set, which_round, 
             phe_for_ct = int(
                 data_df.loc[(data_df.condition == c) & (data_df.target == t)].phenotype)
             phenotype_matrix[t - 1, c - 1] = phe_for_ct
-
-        # Imputation using matrix fatorization
-        if(method == 'nmf'):
-            prediction, score_stack, correct_count = mfi.nmf_impute(
-                phenotype_matrix, phenotype_list, phenotype_matrix.shape, mat_rank=2)
 
         if(method == 'svt'):
             prediction, score_stack, correct_count = fci.svt_impute(
@@ -578,9 +410,6 @@ for i in range(1, ROUNDS):
 
     logging.info("{0} experiment is observed".format(len(exped_set)))
 
-    if(IMPUTE == 'three_point'):
-        var_matrix_next = impure_matirx(data_df, exped_df, na_exps, exped_set)
-
     batch = batchsize_list[i] if i < 30 else 96
 
     logging.info("{0} experiment is selected as frointer".format(batch))
@@ -592,12 +421,12 @@ for i in range(1, ROUNDS):
 
     elif (i + 1) < 30:
         logging.info(
-            'use active learning selecion is not enough, use random sampling')
+            'Use active learning selecion is not enough, use random sampling')
         frointer_set = utils.random_gen(
             ava_exps - exped_set, batch_size=batch)
 
     else:
-        logging.info('last round random')
+        logging.info('Final round we dont have enough data so random selections')
         frointer_set = utils.random_gen(full_set - exped_set, batch_size=batch)
 
     apred_df = utils.get_aprediction(
