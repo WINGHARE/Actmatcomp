@@ -25,7 +25,7 @@ One thing to notice is that you may download the data for the experiment for rea
 
 * [Active Learning Of Perturbations](http://murphylab.web.cmu.edu/software/2016_eLife_Active_Learning_Of_Perturbations/) 
 
-Download data following the guid and copy the following file to the 'data/calculated' directory:
+Download data from the file 'eLife_AL_intermediate_data.tar' following the guide and copy the following file to the 'data/calculated' directory:
 
 ```
 zscored_data.npy
