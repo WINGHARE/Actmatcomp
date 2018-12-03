@@ -5,7 +5,7 @@ from .solver import Solver
 #from .bayesian_ridge_regression import BayesianRidgeRegression
 #from .mice import MICE
 #from .matrix_factorization import MatrixFactorization
-from .iterative_svd import IterativeSVD
+#from .iterative_svd import IterativeSVD
 #from .simple_fill import SimpleFill
 from .soft_impute import SoftImpute
 #from .scaler import BiScaler
@@ -18,7 +18,7 @@ __all__ = [
     #"BayesianRidgeRegression",
     #"MICE",
     #"MatrixFactorization",
-    "IterativeSVD",
+    #"IterativeSVD",
     #"SimpleFill",
     "SoftImpute",
     #"BiScaler",

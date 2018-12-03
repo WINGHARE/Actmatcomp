@@ -6,10 +6,11 @@ This is a framework that combines categorical matrix completion and active machi
 
 Here are some prerequisites to run the software
 ```
-Python3.6
+Python 3.6.2
 Numpy
-Scipy
+Scipy 
 Pandas
+Sklearn
 Fancyimpute*
 ```
 
@@ -40,7 +41,7 @@ You may run the codes on Python commond line.
 ```
 python activelearner.py 
 ```
-Options are displayed in the code.
+Options are displayed in the code. We have already set proper default setting. Do no modify the options unless you know the meaning of options.
 
 ## Authors
 
